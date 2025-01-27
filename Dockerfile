@@ -21,7 +21,7 @@ COPY . .
 RUN echo "app.use(require('cors')());" >> server3.js
 
 # Expose port
-EXPOSE 3000
+EXPOSE 3005
 
 # Create volume for data persistence
 VOLUME ["/app/data"]
