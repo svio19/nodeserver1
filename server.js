@@ -204,7 +204,7 @@ app.use((error, req, res, next) => {
 const startServer = async () => {
   try {
     await initializeFileSystem();
-    const PORT = process.env.PORT || 3000;
+    const PORT = process.env.PORT || 3005;
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`Data directory: ${DATA_DIR}`);
