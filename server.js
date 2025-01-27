@@ -1,14 +1,12 @@
 const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
-const cors = require('cors');
 const app = express();
 
-// Middleware
-app.use(cors());
 app.use(express.json());
+const cors = require('cors');
+app.use(cors());
 
-// Directory and file paths
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'storage.json');
 const REQUESTS_FILE = path.join(DATA_DIR, 'requests.json');
