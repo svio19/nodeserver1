@@ -4,8 +4,10 @@ const path = require('path');
 const app = express();
 
 app.use(express.json());
-const cors = require('cors');
+
 app.use(cors());
+
+const cors = require('cors');
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'storage.json');
