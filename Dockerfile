@@ -14,6 +14,7 @@ RUN mkdir -p /app/data && chmod 777 /app/data
 COPY package*.json ./
 RUN npm install
 
+
 # Bundle app source
 COPY . .
 
