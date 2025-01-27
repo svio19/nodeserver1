@@ -28,4 +28,4 @@ EXPOSE 3005
 VOLUME ["/app/data"]
 
 # Start server
-CMD ["node", "server3.js"]
+CMD ["node", "server.js"]
