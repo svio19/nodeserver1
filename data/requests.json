@@ -1,3 +1,37 @@
 {
-  "requests": []
+  "requests": [
+    {
+      "id": 1738066086961,
+      "timestamp": "2025-01-28T12:08:06.961Z",
+      "method": "GET",
+      "path": "/requests",
+      "user": "anonymous_user",
+      "body": null,
+      "headers": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "id": 1738066087007,
+      "timestamp": "2025-01-28T12:08:07.007Z",
+      "method": "GET",
+      "path": "/items",
+      "user": "anonymous_user",
+      "body": null,
+      "headers": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "id": 1738066087047,
+      "timestamp": "2025-01-28T12:08:07.047Z",
+      "method": "GET",
+      "path": "/requests",
+      "user": "anonymous_user",
+      "body": null,
+      "headers": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      }
+    }
+  ]
 }

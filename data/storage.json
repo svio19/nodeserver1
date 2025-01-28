@@ -1,3 +1,14 @@
 {
-  "items": []
+  "items": [
+    {
+      "id": 1738065958129,
+      "content": {
+        "message": "hey",
+        "response": "Hello! How can I help you today?",
+        "timestamp": "2025-01-28T12:05:58.076Z"
+      },
+      "createdBy": "anonymous_user",
+      "createdAt": "2025-01-28T12:05:58.129Z"
+    }
+  ]
 }

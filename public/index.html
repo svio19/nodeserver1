@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Viewer</title>
+</head>
+<body>
+    <h1>Items</h1>
+    <pre id="items"></pre>
+    <h1>Requests</h1>
+    <pre id="requests"></pre>
+    <script>
+        async function fetchData() {
+            try {
+                const [itemsRes, requestsRes] = await Promise.all([
+                    fetch('/items'),
+                    fetch('/requests')
+                ]);
+                const items = await itemsRes.json();
+                const requests = await requestsRes.json();
+                
+                document.getElementById('items').textContent = 
+                    JSON.stringify(items, null, 2);
+                document.getElementById('requests').textContent = 
+                    JSON.stringify(requests, null, 2);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        fetchData();
+        setInterval(fetchData, 5000);
+    </script>
+</body>
+</html>

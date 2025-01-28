@@ -7,28 +7,26 @@ app.use(express.json());
 const cors = require('cors');
 app.use(cors());
 
+// Serve static files
+app.use(express.static('public'));
+
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'storage.json');
 const REQUESTS_FILE = path.join(DATA_DIR, 'requests.json');
 const LOG_DIR = path.join(DATA_DIR, 'logs');
 
-// Fixed username for non-authenticated users
 const ANONYMOUS_USER = 'anonymous_user';
 
-// Initial data structures
 const initialData = {
   storage: { items: [] },
   requests: { requests: [] }
 };
 
-// Ensure all required directories and files exist
 const initializeFileSystem = async () => {
   try {
-    // Create directories
     await fs.mkdir(DATA_DIR, { recursive: true });
     await fs.mkdir(LOG_DIR, { recursive: true });
 
-    // Initialize files if they don't exist
     const files = [
       { path: DATA_FILE, data: initialData.storage },
       { path: REQUESTS_FILE, data: initialData.requests }
@@ -38,11 +36,7 @@ const initializeFileSystem = async () => {
       try {
         await fs.access(file.path);
       } catch {
-        // File doesn't exist, create it with initial data
-        await fs.writeFile(
-          file.path, 
-          JSON.stringify(file.data, null, 2)
-        );
+        await fs.writeFile(file.path, JSON.stringify(file.data, null, 2));
         console.log(`Initialized ${path.basename(file.path)}`);
       }
     }
@@ -50,16 +44,14 @@ const initializeFileSystem = async () => {
     console.log('File system initialized successfully');
   } catch (error) {
     console.error('Error initializing file system:', error);
-    process.exit(1); // Exit if we can't initialize properly
+    process.exit(1);
   }
 };
 
-// Enhanced error handling for file operations
 const safeFileOperation = async (operation) => {
   try {
     return await operation();
   } catch (error) {
-    // Log error to file
     const errorLog = {
       timestamp: new Date().toISOString(),
       error: error.message,
@@ -75,13 +67,11 @@ const safeFileOperation = async (operation) => {
   }
 };
 
-// Read data from file with validation
 const readData = async (filename) => {
   return safeFileOperation(async () => {
     const data = await fs.readFile(filename, 'utf8');
     try {
       const parsedData = JSON.parse(data);
-      // Validate data structure
       if (filename === REQUESTS_FILE && !parsedData.requests) {
         parsedData.requests = [];
       } else if (filename === DATA_FILE && !parsedData.items) {
@@ -98,10 +88,8 @@ const readData = async (filename) => {
   });
 };
 
-// Write data to file with backup
 const writeData = async (filename, data) => {
   return safeFileOperation(async () => {
-    // Create backup before writing
     const backupFile = `${filename}.backup`;
     try {
       await fs.copyFile(filename, backupFile);
@@ -109,10 +97,8 @@ const writeData = async (filename, data) => {
       console.warn(`Could not create backup of ${filename}:`, error);
     }
 
-    // Write new data
     await fs.writeFile(filename, JSON.stringify(data, null, 2));
 
-    // Remove backup if write was successful
     try {
       await fs.unlink(backupFile);
     } catch (error) {
@@ -121,7 +107,6 @@ const writeData = async (filename, data) => {
   });
 };
 
-// Log request middleware with enhanced error handling
 const logRequest = async (req, res, next) => {
   try {
     const requestData = await readData(REQUESTS_FILE);
@@ -150,10 +135,8 @@ const logRequest = async (req, res, next) => {
   }
 };
 
-// Apply logging middleware to all routes
 app.use(logRequest);
 
-// GET: Retrieve all items
 app.get('/items', async (req, res) => {
   try {
     const data = await readData(DATA_FILE);
@@ -163,7 +146,6 @@ app.get('/items', async (req, res) => {
   }
 });
 
-// GET: Retrieve all requests
 app.get('/requests', async (req, res) => {
   try {
     const data = await readData(REQUESTS_FILE);
@@ -173,7 +155,6 @@ app.get('/requests', async (req, res) => {
   }
 });
 
-// POST: Add a new item
 app.post('/items', async (req, res) => {
   try {
     const data = await readData(DATA_FILE);
@@ -191,7 +172,6 @@ app.post('/items', async (req, res) => {
   }
 });
 
-// Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error);
   res.status(500).json({ 
@@ -200,7 +180,6 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Initialize file system before starting server
 const startServer = async () => {
   try {
     await initializeFileSystem();
