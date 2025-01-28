@@ -22,6 +22,52 @@ const initialData = {
   requests: { requests: [] }
 };
 
+const getUserInfo = (req) => {
+    if (req.body.user && req.body.user.email) {
+      return {
+        email: req.body.user.email,
+        name: req.body.user.name || 'Unknown',
+        timestamp: new Date().toISOString()
+      };
+    }
+    return {
+      email: ANONYMOUS_USER,
+      name: 'Anonymous',
+      timestamp: new Date().toISOString()
+    };
+  };
+  
+  const logRequest = async (req, res, next) => {
+    try {
+      const requestData = await readData(REQUESTS_FILE);
+      const userInfo = getUserInfo(req);
+      
+      const newRequest = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        path: req.path,
+        user: userInfo,
+        body: req.method === 'POST' ? req.body : null,
+        headers: {
+          userAgent: req.headers['user-agent'],
+          contentType: req.headers['content-type']
+        }
+      };
+      
+      requestData.requests.push(newRequest);
+      await writeData(REQUESTS_FILE, requestData);
+      
+      req.userInfo = userInfo;
+      next();
+    } catch (error) {
+      console.error('Error in request logging:', error);
+      next(error);
+    }
+  };
+  
+  app.use(logRequest);
+
 const initializeFileSystem = async () => {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
@@ -107,44 +153,21 @@ const writeData = async (filename, data) => {
   });
 };
 
-const logRequest = async (req, res, next) => {
-  try {
-    const requestData = await readData(REQUESTS_FILE);
-    
-    const newRequest = {
-      id: Date.now(),
-      timestamp: new Date().toISOString(),
-      method: req.method,
-      path: req.path,
-      user: ANONYMOUS_USER,
-      body: req.method === 'POST' ? req.body : null,
-      headers: {
-        userAgent: req.headers['user-agent'],
-        contentType: req.headers['content-type']
-      }
-    };
-    
-    requestData.requests.push(newRequest);
-    await writeData(REQUESTS_FILE, requestData);
-    
-    req.user = ANONYMOUS_USER;
-    next();
-  } catch (error) {
-    console.error('Error in request logging:', error);
-    next(error);
-  }
-};
+
 
 app.use(logRequest);
 
 app.get('/items', async (req, res) => {
-  try {
-    const data = await readData(DATA_FILE);
-    res.json(data.items);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve items' });
-  }
-});
+    try {
+      const data = await readData(DATA_FILE);
+      res.json(data.items);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to retrieve items' });
+    }
+  });
+
+
+
 
 app.get('/requests', async (req, res) => {
   try {
@@ -156,42 +179,49 @@ app.get('/requests', async (req, res) => {
 });
 
 app.post('/items', async (req, res) => {
-  try {
-    const data = await readData(DATA_FILE);
-    const newItem = {
-      id: Date.now(),
-      content: req.body.content,
-      createdBy: ANONYMOUS_USER,
-      createdAt: new Date().toISOString()
-    };
-    data.items.push(newItem);
-    await writeData(DATA_FILE, data);
-    res.status(201).json(newItem);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create item' });
-  }
-});
-
-app.use((error, req, res, next) => {
-  console.error('Unhandled error:', error);
-  res.status(500).json({ 
-    error: 'Internal server error',
-    message: error.message 
+    try {
+      const data = await readData(DATA_FILE);
+      const userInfo = req.userInfo;
+  
+      const newItem = {
+        id: Date.now(),
+        content: req.body.content,
+        createdBy: {
+          email: userInfo.email,
+          name: userInfo.name
+        },
+        createdAt: new Date().toISOString()
+      };
+      
+      data.items.push(newItem);
+      await writeData(DATA_FILE, data);
+      res.status(201).json(newItem);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create item' });
+    }
   });
-});
-
-const startServer = async () => {
-  try {
-    await initializeFileSystem();
-    const PORT = process.env.PORT || 3005;
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Data directory: ${DATA_DIR}`);
+  
+  app.use((error, req, res, next) => {
+    console.error('Unhandled error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message 
     });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-};
-
-startServer();
+  });
+  
+  const startServer = async () => {
+    try {
+      await initializeFileSystem();
+      const PORT = process.env.PORT || 3005;
+      app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log(`Data directory: ${DATA_DIR}`);
+      });
+    } catch (error) {
+      console.error('Failed to start server:', error);
+      process.exit(1);
+    }
+  };
+  
+  startServer();
+  
